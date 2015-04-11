@@ -147,7 +147,7 @@ def on() {
 def off() {
 	log.debug "off()"
 	sendEvent(name: "switch", value: "off")
-    
+    sendEvent(name: "level", value: 99)
 	"st cmd 0x${device.deviceNetworkId} ${endpointId} 6 0 {}"
  
 }
@@ -167,6 +167,7 @@ def setLevel(value) {
 
 	if (value == 0) {
 		sendEvent(name: "switch", value: "off")
+		sendEvent(name: "level", value: 99)
 		cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 6 0 {}"
 	}
 	else if (device.latestValue("switch") == "off") {
@@ -174,7 +175,7 @@ def setLevel(value) {
 	}
 
 	sendEvent(name: "level", value: value)
-	def level = new BigInteger(Math.round(value * 255 / 100).toString()).toString(16)
+	def level = hex(value * 255 / 100)
 	cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 8 4 {${level} 1500}"
 
 	//log.debug cmds
