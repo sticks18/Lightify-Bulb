@@ -167,7 +167,7 @@ def setLevel(value) {
 
 	if (value == 0) {
 		sendEvent(name: "switch", value: "off")
-		sendEvent(name: "level", value: 99
+		sendEvent(name: "level", value: 99)
 		cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 6 0 {}"
 	}
 	else if (device.latestValue("switch") == "off") {
