@@ -265,6 +265,15 @@ private Integer convertHexToInt(hex) {
     Integer.parseInt(hex,16)
 }
 
+//Need to reverse array of size 2
+private byte[] reverseArray(byte[] array) {
+    byte tmp;
+    tmp = array[1];
+    array[1] = array[0];
+    array[0] = tmp;
+    return array
+}
+
 private adjustOutgoingHue(percent) {
 	def adjusted = percent
 	if (percent > 31) {
