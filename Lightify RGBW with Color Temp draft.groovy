@@ -249,6 +249,14 @@ private hex(value, width=2) {
 	s
 }
 
+private String swapEndianHex(String hex) {
+    reverseArray(hex.decodeHex()).encodeHex()
+}
+
+private Integer convertHexToInt(hex) {
+    Integer.parseInt(hex,16)
+}
+
 private adjustOutgoingHue(percent) {
 	def adjusted = percent
 	if (percent > 31) {
