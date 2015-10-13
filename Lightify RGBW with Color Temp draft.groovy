@@ -135,7 +135,7 @@ def setColorTemperature(value) {
     }
 
     def tempInMired = Math.round(1000000/value)
-    def finalHex = swapEndianHex(hex(tempInMired, 4))
+    def finalHex = swapEndianHex(hexF(tempInMired, 4))
    // def genericName = getGenericName(value)
    // log.debug "generic name is : $genericName"
 
@@ -242,6 +242,14 @@ private getEndpointId() {
 }
 
 private hex(value, width=2) {
+	def s = new BigInteger(Math.round(value).toString()).toString(16)
+	while (s.size() < width) {
+		s = "0" + s
+	}
+	s
+}
+
+private hexF(value, width) {
 	def s = new BigInteger(Math.round(value).toString()).toString(16)
 	while (s.size() < width) {
 		s = "0" + s
