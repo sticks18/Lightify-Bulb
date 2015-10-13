@@ -41,6 +41,11 @@ metadata {
 		capability "Sensor"
 
 		command "setAdjustedColor"
+        command "setDefaultWhite"
+        command "setCoolWhite"
+        command "setDaylight"
+        attribute "colorName", "string"
+        attribute "colorMode", "string"
 
 		fingerprint profileId: "0104", inClusters: "0000,0003,0004,0005,0006,0008,0300,1000", outClusters: "0019"
 	}
@@ -67,7 +72,7 @@ metadata {
 		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
 			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
-		controlTile("rgbSelector", "device.color", "color", height: 3, width: 3, inactiveLabel: false) {
+		controlTile("rgbSelector", "device.color", "color", height: 2, width: 2, inactiveLabel: false) {
 			state "color", action:"setAdjustedColor"
 		}
 		controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 2, inactiveLabel: false) {
@@ -85,16 +90,28 @@ metadata {
 		controlTile("hueSliderControl", "device.hue", "slider", height: 1, width: 2, inactiveLabel: false) {
 			state "hue", action:"color control.setHue"
 		}
-		controlTile("colorTempSliderControl", "device.colorTemperature", "slider", height: 1, width: 2, inactiveLabel: false, range:"(2700..6500)") {
+		controlTile("colorTempSliderControl", "device.colorTemperature", "slider", height: 1, width: 2, inactiveLabel: false, range:"(2000..6500)") {
             state "colorTemperature", action:"color temperature.setColorTemperature"
         }
         valueTile("colorTemp", "device.colorTemperature", inactiveLabel: false, decoration: "flat") {
             state "colorTemperature", label: '${currentValue} K'
         }
-        
+        standardTile("defWhite", "device.setDefaultWhite", inactiveLabel: false, decoration: "flat") {
+			state "default", label:"Default White", action:"setDefaultWhite"
+		}
+        standardTile("coolWhite", "device.setCoolWhite", inactiveLabel: false, decoration: "flat") {
+			state "default", label:"Cool White", action:"setCoolWhite"
+		}
+        standardTile("daylight", "device.setDaylight", inactiveLabel: false, decoration: "flat") {
+			state "default", label:"Daylight", action:"setDaylight"
+		}
+        standardTile("colorMode", "device.colorMode", width: 1, height: 1, inactiveLabel: false) {
+			state "Color", label:'${name}'
+			state "White", label:'${name}'
+		}
         
 		main(["switch"])
-		details(["switch", "levelSliderControl", "rgbSelector", "refresh", "colorTempSliderControl", "colorTemp"])
+		details(["rgbSelector", "switch", "colorMode", "levelSliderControl", "defWhite", "colorTempSliderControl", "colorTemp", "refresh", "coolWhite", "daylight" ])
 	}
 }
 
@@ -129,9 +146,27 @@ def off() {
 	"st cmd 0x${device.deviceNetworkId} ${endpointId} 6 0 {}"
 }
 
+def setDefaultWhite() {
+
+	setColorTemperature(2700)
+
+}
+
+def setCoolWhite() {
+
+	setColorTemperature(4000)
+
+}
+
+def setDaylight() {
+
+	setColorTemperature(6500)
+
+}
+
 def setColorTemperature(value) {
     if(value<101){
-        value = (value*38) + 2700		//Calculation of mapping 0-100 to 2700-6500
+        value = (value*45) + 2000		//Calculation of mapping 0-100 to 2000-6500
     }
 
     def tempInMired = Math.round(1000000/value)
@@ -141,6 +176,7 @@ def setColorTemperature(value) {
 
     def cmds = []
     sendEvent(name: "colorTemperature", value: value, displayed:false)
+    sendEvent(name: "colorMode", value: "White")
    // sendEvent(name: "colorName", value: genericName)
 
     cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 0x0300 0x0a {${finalHex} 2000}"
@@ -172,6 +208,7 @@ def setColor(value){
 
 	sendEvent(name: "hue", value: value.hue)
 	sendEvent(name: "saturation", value: value.saturation)
+    sendEvent(name: "colorMode", value: "Color")
 	def scaledHueValue = Math.round(value.hue * max / 100.0)
 	def scaledSatValue = Math.round(value.saturation * max / 100.0)
 
