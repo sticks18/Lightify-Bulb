@@ -141,7 +141,8 @@ def refresh() {
             "st rattr 0x${device.deviceNetworkId} ${endpointId} 6 0", "delay 500",
             "st rattr 0x${device.deviceNetworkId} ${endpointId} 8 0", "delay 500",
             "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 0", "delay 500",
-            "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 1"
+            "st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 1", "delay 500",
+            "st wattr 0x${device.deviceNetworkId} 1 8 0x10 0x21 {0015}"
     ]
 
 }
