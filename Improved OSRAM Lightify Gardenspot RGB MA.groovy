@@ -19,6 +19,7 @@ metadata {
         capability "Color Control"
 
         attribute "colorName", "string"
+        attribute "switchColor", "string"
 
         command "setAdjustedColor"
 
@@ -40,32 +41,58 @@ metadata {
     }
 
     // UI tile definitions
-    tiles {
-        standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: true) {
-            state "on", label: '${name}', action: "switch.off", icon: "st.switches.light.on", backgroundColor: "#79b821"
-            state "off", label: '${name}', action: "switch.on", icon: "st.switches.light.off", backgroundColor: "#ffffff"
+tiles (scale: 2){
+		multiAttributeTile(name: "switch", type: "lighting", width: 6, height: 4, canChangeIcon: true) {
+        	tileAttribute("device.switchColor", key: "PRIMARY_CONTROL") {
+			attributeState "off", label: '${currentValue}', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff"
+            		attributeState "Red", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff0000"
+            		attributeState "Brick Red", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff3700"
+    			attributeState "Safety Orange", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff6F00"
+    			attributeState "Dark Orange", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff9900"
+            		attributeState "Amber", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ffbf00"
+            		attributeState "Gold", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ffe1000"
+            		attributeState "Yellow", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ffff00"
+    			attributeState "Electric Lime", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#bfff00"
+            		attributeState "Lawn Green", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#88ff00"
+            		attributeState "Bright Green", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#48ff00"
+            		attributeState "Lime", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00ff11"
+            		attributeState "Spring Green", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00ff6a"
+            		attributeState "Turquoise", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00ffd0"
+            		attributeState "Aqua", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00ffff"
+            		attributeState "Sky Blue", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00bfff"
+            		attributeState "Dodger Blue", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#007bff"
+            		attributeState "Navy Blue", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#0050ff"
+            		attributeState "Blue", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#0000ff"
+            		attributeState "Han Purple", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#3b00ff"
+            		attributeState "Electric Indigo", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#6600ff"
+            		attributeState "Electric Purple", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#b200ff"
+            		attributeState "Orchid Purple", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#e900ff"
+            		attributeState "Magenta", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff00dc"
+            		attributeState "Hot Pink", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff00aa"
+            		attributeState "Deep Pink", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff007b"
+            		attributeState "Raspberry", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff0061"
+            		attributeState "Crimson", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff003b"
+			}
+            tileAttribute ("device.color", key: "COLOR_CONTROL") {
+            	attributeState "color", action: "setAdjustedColor"
+            }
+            tileAttribute ("device.level", key: "SECONDARY_CONTROL") {
+            	attributeState "level", label: 'Level is ${currentValue}%'
+            }
         }
-        standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
-            state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
-        }
-
-        controlTile("rgbSelector", "device.color", "color", height: 3, width: 3, inactiveLabel: false) {
-            state "color", action:"setAdjustedColor"
-        }
-        valueTile("colorName", "device.colorName", inactiveLabel: false, decoration: "flat") {
+        standardTile("refresh", "device.switch", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
+			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
+		}
+		controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 6, inactiveLabel: false) {
+			state "level", action:"switch level.setLevel"
+		}
+        valueTile("colorName", "device.colorName", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
             state "colorName", label: '${currentValue}'
         }
-
-        controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 2, inactiveLabel: false, range:"(0..100)") {
-            state "level", action:"switch level.setLevel"
-        }
-        valueTile("level", "device.level", inactiveLabel: false, decoration: "flat") {
-            state "level", label: 'Level ${currentValue}%'
-        }
-
-        main(["switch"])
-        details(["switch", "refresh", "colorName", "levelSliderControl", "level", "rgbSelector"])
-    }
+        
+		main(["switch"])
+		details(["switch", "levelSliderControl", "colorName", "refresh"])
+	}
 }
 
 // Parse incoming device messages to generate events
@@ -75,6 +102,7 @@ def parse(String description) {
         if(description?.endsWith("0100") ||description?.endsWith("1001") || description?.matches("on/off\\s*:\\s*1"))
         {
             def result = createEvent(name: "switch", value: "on")
+            sendEvent(name: "switchColor", value: device.currentValue("colorName"), displayed: false)
             log.debug "Parse returned ${result?.descriptionText}"
             return result
         }
@@ -82,6 +110,7 @@ def parse(String description) {
         {
             if(!(description?.startsWith("catchall: 0104 0300"))){
                 def result = createEvent(name: "switch", value: "off")
+                sendEvent(name: "switchColor", value: "off", displayed: false)
                 log.debug "Parse returned ${result?.descriptionText}"
                 return result
             }
@@ -95,6 +124,9 @@ def parse(String description) {
             if(descMap.attrId == "0000"){  //Hue Attribute
                 def hueValue = Math.round(convertHexToInt(descMap.value) / 255 * 360)
                 log.debug "Hue value returned is $hueValue"
+                def colorName = getColorName(hueValue)
+    		sendEvent(name: "colorName", value: colorName)
+                if (device.currentValue("switch") == "on") { sendEvent(name: "switchColor", value: device.currentValue("colorName"), displayed: false) }
                 sendEvent(name: "hue", value: hueValue, displayed:false)
             }
             else if(descMap.attrId == "0001"){ //Saturation Attribute
@@ -111,7 +143,12 @@ def parse(String description) {
     }
     else {
         def name = description?.startsWith("on/off: ") ? "switch" : null
-        def value = name == "switch" ? (description?.endsWith(" 1") ? "on" : "off") : null
+        if (name == "switch") {
+            def value = (description?.endsWith(" 1") ? "on" : "off")
+        	log.debug value
+            sendEvent(name: "switchColor", value: (value == "off" ? "off" : device.currentValue("colorName")), displayed: false)
+        }
+        else { def value = null }
         def result = createEvent(name: name, value: value)
         log.debug "Parse returned ${result?.descriptionText}"
         return result
@@ -123,6 +160,7 @@ def parse(String description) {
 def on() {
     log.debug "on()"
     sendEvent(name: "switch", value: "on")
+    sendEvent(name: "switchColor", value: device.currentValue("colorName"), displayed: false)
     setLevel(state?.levelValue)
 }
 
@@ -133,6 +171,7 @@ def zigbeeOff() {
 def off() {
     log.debug "off()"
     sendEvent(name: "switch", value: "off")
+    sendEvent(name: "switchColor", value: "off", displayed: false)
     zigbeeOff()
 }
 
@@ -190,10 +229,12 @@ def setLevel(value) {
 
     if (value == 0) {
         sendEvent(name: "switch", value: "off")
+        sendEvent(name: "switchColor", value: "off", displayed: false)
         cmds << zigbeeOff()
     }
     else if (device.latestValue("switch") == "off") {
         sendEvent(name: "switch", value: "on")
+        sendEvent(name: "switchColor", value: device.currentValue("colorName"), displayed: false)
     }
 
     sendEvent(name: "level", value: state.levelValue)
