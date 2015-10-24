@@ -6,9 +6,8 @@
 */
 
 metadata {
-    definition (name: "OSRAM LIGHTIFY Gardenspot mini RGB", namespace: "smartthings", author: "SmartThings") {
+    definition (name: "Improved OSRAM LIGHTIFY Gardenspot mini RGB MA", namespace: "smartthings", author: "SmartThings") {
 
-        capability "Color Temperature"
         capability "Actuator"
         capability "Switch"
         capability "Switch Level"
