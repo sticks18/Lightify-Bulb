@@ -19,8 +19,11 @@ metadata {
 
         attribute "colorName", "string"
         attribute "switchColor", "string"
+        attribute "loopActive", "string"
 
         command "setAdjustedColor"
+        command "startLoop"
+        command "stopLoop"
 
 
         fingerprint profileId: "0104", inClusters: "0000,0003,0004,0005,0006,0008,0300,0B04,FC0F", outClusters: "0019", manufacturer: "OSRAM", model: "Gardenspot RGB"
@@ -80,17 +83,21 @@ tiles (scale: 2){
             }
         }
         standardTile("refresh", "device.switch", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
-			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
-		}
-		controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 6, inactiveLabel: false) {
-			state "level", action:"switch level.setLevel"
-		}
+		state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
+	}
+	standardTile("loop", "device.loopActive", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
+		state "Active", label:'${currentValue}', action: "stopLoop"
+		state "Inactive", label:'${currentValue}', action: "startLoop"
+	}
+	controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 6, inactiveLabel: false) {
+		state "level", action:"switch level.setLevel"
+	}
         valueTile("colorName", "device.colorName", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
-            state "colorName", label: '${currentValue}'
+            	state "colorName", label: '${currentValue}'
         }
         
 		main(["switch"])
-		details(["switch", "levelSliderControl", "colorName", "refresh"])
+		details(["switch", "levelSliderControl", "colorName", "loop", "refresh"])
 	}
 }
 
