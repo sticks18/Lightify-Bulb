@@ -74,6 +74,7 @@ tiles (scale: 2){
             		attributeState "Deep Pink", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff007b"
             		attributeState "Raspberry", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff0061"
             		attributeState "Crimson", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff003b"
+            		attributeState "Color Loop", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on"
 			}
             tileAttribute ("device.color", key: "COLOR_CONTROL") {
             	attributeState "color", action: "setAdjustedColor"
@@ -163,10 +164,40 @@ def parse(String description) {
 
 }
 
+def startLoop() {
+	
+	log.debug "activating color loop"
+	def cmds = []
+	sendEvent(name: "level", value: state.levelValue)
+    	def level = hex(state.levelValue * 255 / 100)
+	cmds << zigbeeSetLevel(level)
+	sendEvent(name: "switch", value: "on")
+        sendEvent(name: "switchColor", value: "Color Loop", displayed: false)
+        cmds << "delay 150"
+	cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {E0 02 01 0002 0000}"
+	sendEvent(name: "loopActive", value: "Active")
+	
+	cmds
+	
+}
+
+def stopLoop() {
+	
+	log.debug "deactivating color loop"
+	def cmds = [
+		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {80 00 00 0000 0000}", "delay 200"
+		"st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 0", "delay 200"
+		"st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 1", "delay 200"
+		"st rattr 0x${device.deviceNetworkId} ${endpointId} 8 0"
+        ]
+	sendEvent(name: "loopActive", value: "Inactive")
+	
+	cmds
+	
+}
+
 def on() {
     log.debug "on()"
-    sendEvent(name: "switch", value: "on")
-    sendEvent(name: "switchColor", value: device.currentValue("colorName"), displayed: false)
     setLevel(state?.levelValue)
 }
 
