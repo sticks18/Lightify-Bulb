@@ -74,7 +74,7 @@ tiles (scale: 2){
             		attributeState "Deep Pink", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff007b"
             		attributeState "Raspberry", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff0061"
             		attributeState "Crimson", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#ff003b"
-            		attributeState "Color Loop", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on"
+            		attributeState "Color Loop", label: '${currentValue}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#79b821"
 			}
             tileAttribute ("device.color", key: "COLOR_CONTROL") {
             	attributeState "color", action: "setAdjustedColor"
@@ -105,7 +105,10 @@ tiles (scale: 2){
 // Parse incoming device messages to generate events
 def parse(String description) {
     //log.info "description is $description"
-    if (description?.startsWith("catchall:")) {
+    if (device.currentValue("loopActive") == "Active") {
+  
+    }
+    else if (description?.startsWith("catchall:")) {
         if(description?.endsWith("0100") ||description?.endsWith("1001") || description?.matches("on/off\\s*:\\s*1"))
         {
             def result = createEvent(name: "switch", value: "on")
@@ -174,7 +177,7 @@ def startLoop() {
 	sendEvent(name: "switch", value: "on")
         sendEvent(name: "switchColor", value: "Color Loop", displayed: false)
         cmds << "delay 150"
-	cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {E0 02 01 0002 0000}"
+	cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {07 01 01 0200 0000}"
 	sendEvent(name: "loopActive", value: "Active")
 	
 	cmds
@@ -185,7 +188,7 @@ def stopLoop() {
 	
 	log.debug "deactivating color loop"
 	def cmds = [
-		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {80 00 00 0000 0000}", "delay 200"
+		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {01 00 00 0000 0000}", "delay 200"
 		"st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 0", "delay 200"
 		"st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 1", "delay 200"
 		"st rattr 0x${device.deviceNetworkId} ${endpointId} 8 0"
