@@ -188,9 +188,9 @@ def stopLoop() {
 	
 	log.debug "deactivating color loop"
 	def cmds = [
-		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {01 00 00 0000 0000}", "delay 200"
-		"st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 0", "delay 200"
-		"st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 1", "delay 200"
+		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {01 00 00 0000 0000}", "delay 200",
+		"st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 0", "delay 200",
+		"st rattr 0x${device.deviceNetworkId} ${endpointId} 0x0300 1", "delay 200",
 		"st rattr 0x${device.deviceNetworkId} ${endpointId} 8 0"
         ]
 	sendEvent(name: "loopActive", value: "Inactive")
