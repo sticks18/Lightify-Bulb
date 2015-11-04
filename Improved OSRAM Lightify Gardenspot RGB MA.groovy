@@ -158,8 +158,6 @@ def parse(String description) {
 
 def on() {
     log.debug "on()"
-    sendEvent(name: "switch", value: "on")
-    sendEvent(name: "switchColor", value: device.currentValue("colorName"), displayed: false)
     setLevel(state?.levelValue)
 }
 
