@@ -20,6 +20,8 @@ metadata {
         attribute "colorName", "string"
         attribute "switchColor", "string"
         attribute "loopActive", "string"
+        attribute "loopDirection", "string"
+        attribute "loopTime", "number"
 
         command "setAdjustedColor"
         command "startLoop"
@@ -167,20 +169,42 @@ def parse(String description) {
 
 }
 
-def startLoop() {
+def startLoop(Map params) {
+	// direction either increments or decrements the hue value: "Up" will increment, "Down" will decrement
 	
-	log.debug "activating color loop"
-	def cmds = []
-	sendEvent(name: "level", value: state.levelValue)
-    	def level = hex(state.levelValue * 255 / 100)
-	cmds << zigbeeSetLevel(level)
-	sendEvent(name: "switch", value: "on")
-        sendEvent(name: "switchColor", value: "Color Loop", displayed: false)
-        cmds << "delay 150"
-	cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {07 01 01 0200 0000}"
-	sendEvent(name: "loopActive", value: "Active")
+	def direction = (device.currentValue("loopDirection") != null) ? device.currentValue("loopDirection") : (device.currentValue("loopDirection") == "Down" ? "00" : "01"))
+	if (params.direction != null) {
+		direction = (params.direction == "Down" ? "00" : "01")
+		sendEvent(name: "loopDirection", value: params.direction )
+	}
+
 	
-	cmds
+	// time parameter is the time in seconds for a full loop
+	def cycle = (device.currentValue("loopTime") != null ? device.currentValue("loopTime") : 2)
+	if (params.time != null) {
+		cycle = params.time
+		sendEvent(name:"loopTime", value: cycle)
+	}
+	def finTime = swapEndianHex(hexF(cycle, 4))
+	
+	sendEvent(name: "switchColor", value: "Color Loop", displayed: false)
+    	sendEvent(name: "loopActive", value: "Active")
+    	
+	if (params.hue == null) {  
+		
+		// start hue was not specified, so start loop from current hue updating direction and time
+		log.debug "activating color loop from current hue"
+		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {07 02 ${direction} ${finTime} 0000}"
+	}
+	else {
+		
+		// start hue was specified, so convert to enhanced hue and start loop from there
+		def sHue = Math.min(Math.round(params.hue * 255 / 100), 255)
+		finHue = swapEndianHex(hexF(sHue, 4))
+		log.debug "activating color loop from specified hue"
+		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {0F 01 ${direction} ${finTime} ${sHue}}"
+		
+	}
 	
 }
 
@@ -393,6 +417,14 @@ private hex(value, width=2) {
         s = "0" + s
     }
     s
+}
+
+private hexF(value, width) {
+	def s = new BigInteger(Math.round(value).toString()).toString(16)
+	while (s.size() < width) {
+		s = "0" + s
+	}
+	s
 }
 
 private evenHex(value){
