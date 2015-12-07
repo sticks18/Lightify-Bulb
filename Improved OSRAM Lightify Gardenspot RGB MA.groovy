@@ -26,6 +26,8 @@ metadata {
         command "setAdjustedColor"
         command "startLoop"
         command "stopLoop"
+        command "setLoopTime"
+        command "setDirection"
 
 
         fingerprint profileId: "0104", inClusters: "0000,0003,0004,0005,0006,0008,0300,0B04,FC0F", outClusters: "0019", manufacturer: "OSRAM", model: "Gardenspot RGB"
@@ -98,9 +100,15 @@ tiles (scale: 2){
         valueTile("colorName", "device.colorName", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
             	state "colorName", label: '${currentValue}'
         }
+        controlTile("loopTimeControl", "device.loopTime", "slider", height: 2, width: 4, range: "1...60", inactiveLabel: false) {
+        	state "loopTime", action: "setLoopTime"
+        }
+        standardTile("loopDir", "device.loopDirection", height: 2, width: 2, inactiveLabel: false, decoration: "flat") {
+        	state "default", label: '${currentValue}', action: "setDirection"
+        }
         
 		main(["switch"])
-		details(["switch", "levelSliderControl", "colorName", "loop", "refresh"])
+		details(["switch", "levelSliderControl", "colorName", "loop", "refresh", "loopTimeControl", "loopDir"])
 	}
 }
 
@@ -167,6 +175,23 @@ def parse(String description) {
     }
 
 
+}
+
+def setDirection() {
+	def direction = (device.currentValue("loopDirection") == "Down" ? "Up" : "Down")
+	sendEvent(name: "loopDirection", value: direction)
+	if (device.currentValue("loopActive") == "Active") {
+		def dirHex = (direction == "Down" ? "00" : "01")
+		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {02 01 ${dirHex} 0000 0000}"
+	}
+}
+
+def setLoopTime(value) {
+	sendEvent(name:"loopTime", value: value)
+	if (device.currentValue("loopActive") == "Active") {
+		def finTime = swapEndianHex(hexF(value, 4))
+		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {04 01 00 ${finTime} 0000}"
+	}
 }
 
 def startLoop(Map params) {
