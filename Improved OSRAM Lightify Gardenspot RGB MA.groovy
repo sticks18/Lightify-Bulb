@@ -142,7 +142,7 @@ def parse(String description) {
 
         if (descMap.cluster == "0300") {
             if(descMap.attrId == "0000"){  //Hue Attribute
-                def hueValue = Math.round(convertHexToInt(descMap.value) / 255 * 360)
+                def hueValue = Math.round(convertHexToInt(descMap.value) / 255 * 100)
                 log.debug "Hue value returned is $hueValue"
                 def colorName = getColorName(hueValue)
     		sendEvent(name: "colorName", value: colorName)
@@ -179,9 +179,11 @@ def parse(String description) {
 
 def setDirection() {
 	def direction = (device.currentValue("loopDirection") == "Down" ? "Up" : "Down")
+    log.trace direction
 	sendEvent(name: "loopDirection", value: direction)
 	if (device.currentValue("loopActive") == "Active") {
 		def dirHex = (direction == "Down" ? "00" : "01")
+        log.trace dirHex
 		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {02 01 ${dirHex} 0000 0000}"
 	}
 }
@@ -197,37 +199,41 @@ def setLoopTime(value) {
 def startLoop(Map params) {
 	// direction either increments or decrements the hue value: "Up" will increment, "Down" will decrement
 	
-	def direction = (device.currentValue("loopDirection") != null ? device.currentValue("loopDirection") : (device.currentValue("loopDirection") == "Down" ? "00" : "01"))
-	if (params?.direction != null) {
+	def direction = (device.currentValue("loopDirection") != null ? (device.currentValue("loopDirection") == "Down" ? "00" : "01") : "00")
+	log.trace direction
+    if (params?.direction != null) {
 		direction = (params.direction == "Down" ? "00" : "01")
 		sendEvent(name: "loopDirection", value: params.direction )
 	}
-
+	log.trace direction
 	
 	// time parameter is the time in seconds for a full loop
 	def cycle = (device.currentValue("loopTime") != null ? device.currentValue("loopTime") : 2)
-	if (params?.time != null) {
+	log.trace cycle
+    if (params?.time != null) {
 		cycle = params.time
 		sendEvent(name:"loopTime", value: cycle)
 	}
-	def finTime = swapEndianHex(hexF(cycle, 4))
-	
+	log.trace cycle
+    def finTime = swapEndianHex(hexF(cycle, 4))
+	log.trace finTime
 	sendEvent(name: "switchColor", value: "Color Loop", displayed: false)
-    	sendEvent(name: "loopActive", value: "Active")
+    sendEvent(name: "loopActive", value: "Active")
     	
-	if (params?.hue == null) {  
-		
-		// start hue was not specified, so start loop from current hue updating direction and time
-		log.debug "activating color loop from current hue"
-		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {07 02 ${direction} ${finTime} 0000}"
-	}
-	else {
+	if (params?.hue != null) {  
 		
 		// start hue was specified, so convert to enhanced hue and start loop from there
 		def sHue = Math.min(Math.round(params.hue * 255 / 100), 255)
 		finHue = swapEndianHex(hexF(sHue, 4))
 		log.debug "activating color loop from specified hue"
 		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {0F 01 ${direction} ${finTime} ${sHue}}"
+        
+	}
+	else {
+		       
+        // start hue was not specified, so start loop from current hue updating direction and time
+		log.debug "activating color loop from current hue"
+		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {07 02 ${direction} ${finTime} 0000}"
 		
 	}
 	
