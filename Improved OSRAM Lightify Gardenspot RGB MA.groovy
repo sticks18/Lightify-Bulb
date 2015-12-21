@@ -198,10 +198,9 @@ def setLoopTime(value) {
 
 def startLoop(Map params) {
 	// direction either increments or decrements the hue value: "Up" will increment, "Down" will decrement
-	
 	def direction = (device.currentValue("loopDirection") != null ? (device.currentValue("loopDirection") == "Down" ? "00" : "01") : "00")
 	log.trace direction
-    if (params?.direction != null) {
+    	if (params?.direction != null) {
 		direction = (params.direction == "Down" ? "00" : "01")
 		sendEvent(name: "loopDirection", value: params.direction )
 	}
@@ -210,15 +209,20 @@ def startLoop(Map params) {
 	// time parameter is the time in seconds for a full loop
 	def cycle = (device.currentValue("loopTime") != null ? device.currentValue("loopTime") : 2)
 	log.trace cycle
-    if (params?.time != null) {
+    	if (params?.time != null) {
 		cycle = params.time
 		sendEvent(name:"loopTime", value: cycle)
 	}
 	log.trace cycle
-    def finTime = swapEndianHex(hexF(cycle, 4))
+    	def finTime = swapEndianHex(hexF(cycle, 4))
 	log.trace finTime
+	
+	def cmds = []
+	cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 6 1 {}"
+    	cmds << "delay 200"
+    	
 	sendEvent(name: "switchColor", value: "Color Loop", displayed: false)
-    sendEvent(name: "loopActive", value: "Active")
+    	sendEvent(name: "loopActive", value: "Active")
     	
 	if (params?.hue != null) {  
 		
@@ -226,17 +230,17 @@ def startLoop(Map params) {
 		def sHue = Math.min(Math.round(params.hue * 255 / 100), 255)
 		finHue = swapEndianHex(hexF(sHue, 4))
 		log.debug "activating color loop from specified hue"
-		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {0F 01 ${direction} ${finTime} ${sHue}}"
+		cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {0F 01 ${direction} ${finTime} ${sHue}}"
         
 	}
 	else {
 		       
         // start hue was not specified, so start loop from current hue updating direction and time
 		log.debug "activating color loop from current hue"
-		"st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {07 02 ${direction} ${finTime} 0000}"
+		cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 0x300 0x44 {07 02 ${direction} ${finTime} 0000}"
 		
 	}
-	
+	cmds
 }
 
 def stopLoop() {
