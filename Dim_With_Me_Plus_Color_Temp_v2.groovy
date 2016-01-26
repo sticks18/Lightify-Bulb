@@ -85,7 +85,7 @@ preferences {
 		input "slaves", "capability.switchLevel", 
 			multiple: true, 
 			title: "Slave Dimmer Switch(es)...", 
-			required: true
+			required: false
 	}
 }
 
