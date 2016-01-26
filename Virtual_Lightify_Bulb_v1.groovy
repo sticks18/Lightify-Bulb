@@ -12,21 +12,20 @@
  *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
  *  for the specific language governing permissions and limitations under the License.
  *
+ *  2016-01-26 - Updated virtual device to use official Color Temperature Capability instead of custom commands
+ * 
  */
  
 metadata {
-	definition (name: "Virtual Color Temp v1", namespace: "Sticks18", author: "Scott Gibson") {
+	definition (name: "Virtual Color Temp v2", namespace: "Sticks18", author: "Scott Gibson") {
 
 		capability "Actuator"
 		capability "Refresh"
 		capability "Switch"
 		capability "Switch Level"
+		capability "Color Temperature"
         
-        command "setColorTemp"
-        
-        attribute "colorTemp", "string"
-		attribute "kelvin", "string"
-        attribute "bulbTemp", "string"
+        	attribute "bulbTemp", "string"
         
 	}
 
@@ -43,11 +42,11 @@ metadata {
 		controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 2, inactiveLabel: false) {
 			state "level", action:"switch level.setLevel"
 		}
-        controlTile("colorSliderControl", "device.colorTemp", "slider", height: 1, width: 2, inactiveLabel: false) {
-			state "colorTemp", action:"setColorTemp"
+        controlTile("colorSliderControl", "device.colorTemperature", "slider", height: 1, width: 2, inactiveLabel: false, range: "(2700..6500)") {
+			state "colorTemperature", action:"color temperature.setColorTemperature"
 		}
-		valueTile("kelvin", "device.kelvin", inactiveLabel: false, decoration: "flat") {
-			state "kelvin", label: 'Temp ${currentValue}K'
+		valueTile("kelvin", "device.colorTemperature", inactiveLabel: false, decoration: "flat") {
+			state "colorTemperature", label: 'Temp ${currentValue} K'
 		}
         valueTile("bulbTemp", "device.bulbTemp", inactiveLabel: false, decoration: "flat") {
 			state "bulbTemp", label: '${currentValue}'
@@ -85,30 +84,27 @@ def setLevel(value) {
     
     if (val == 0){ // I liked that 0 = off
     	sendEvent(name: "level", value: value)
-    	sendEvent(name: "switch", value: "on")
+    	sendEvent(name: "switch", value: "off")
     }
     else
     {
     	sendEvent(name: "switch", value: "on")
         sendEvent(name: "level", value: value)
-    	sendEvent(name: "switch.setLevel", value: value) // had to add this to work if apps subscribed to
-                                                         // setLevel event. "Dim With Me" was one.
     }
 }
 
-def setColorTemp(value) {
+def setColorTemperature(value) {
 	
-    log.trace "setColorTemp($value)"
+    log.trace "setColorTemperature($value)"
 
-    def degrees = Math.round((value * 38) + 2700)
-  	if (degrees == 6462) { degrees = degrees + 38 }
+    def degrees = Math.max(2700, value)
+    degrees = Math.min(6500, value)
 	
     def bTemp = getBulbTemp(value)
     
     log.trace degrees
 	
-	sendEvent(name: "colorTemp", value: value)
-    sendEvent(name: "kelvin", value: degrees)
+    sendEvent(name: "colorTemperature", value: degrees)
     sendEvent( name: "bulbTemp", value: bTemp)
     
 }
@@ -118,22 +114,22 @@ private getBulbTemp(value) {
 	
     def s = "Soft White"
     
-	if (value < 7) {
+	if (value < 2900) {
     	return s
     } 
-    else if (value < 18) {
+    else if (value < 3350) {
     	s = "Warm White"
         return s
     }
-    else if (value < 32) {
+    else if (value < 3900) {
     	s = "Cool White"
         return s
     }
-    else if (value < 55) {
+    else if (value < 4800) {
     	s = "Bright White"
         return s
     }
-    else if (value < 81) {
+    else if (value < 5800) {
     	s = "Natural"
         return s
     }
