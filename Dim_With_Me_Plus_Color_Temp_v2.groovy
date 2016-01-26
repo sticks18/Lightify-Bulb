@@ -34,6 +34,9 @@
  *  Change 3:   2015-03-21 (sticks18)
  *              added section for Osram color temp adjustable bulbs. subscription
  *              to custom event for color temp
+ * 
+ * Change 4:    2016-01-26 (sticks18)
+ * 		Updated code to use official Color Temperature capability
  *
  ******************************************************************************
                 
@@ -65,9 +68,9 @@ preferences {
 	}
 	
     section("And these will follow with color temperature...") {
-		input "slaves3", "capability.switchLevel", 
+		input "slaves3", "capability.colorTemperature", 
 			multiple: true, 
-			title: "Slave Osram Lightify Bulbs...", 
+			title: "Slave Tunable White Bulbs...", 
 			required: true
 	}
     
@@ -90,9 +93,9 @@ def installed()
 {
 	subscribe(masters, "switch.on", switchOnHandler)
 	subscribe(masters, "switch.off", switchOffHandler)
-	subscribe(masters, "switch.setLevel", switchSetLevelHandler)
+	subscribe(masters, "level", switchSetLevelHandler)
 	subscribe(masters, "switch", switchSetLevelHandler)
-    subscribe(masters, "colorTemp", switchSetColorTempHandler)
+    subscribe(masters, "colorTemperature", switchSetColorTempHandler)
 }
 
 def updated()
@@ -100,9 +103,9 @@ def updated()
 	unsubscribe()
 	subscribe(masters, "switch.on", switchOnHandler)
 	subscribe(masters, "switch.off", switchOffHandler)
-	subscribe(masters, "switch.setLevel", switchSetLevelHandler)
+	subscribe(masters, "level", switchSetLevelHandler)
 	subscribe(masters, "switch", switchSetLevelHandler)
-    subscribe(masters, "colorTemp", switchSetColorTempHandler)
+    subscribe(masters, "colorTemperature", switchSetColorTempHandler)
 	log.info "subscribed to all of switches events"
 }
 
@@ -115,7 +118,7 @@ def switchSetLevelHandler(evt)
 	level = level.toInteger()
 	log.info "switchSetLevelHandler Event: ${level}"
 	slaves?.setLevel(level)
-    slaves3?.setLevel(level)
+        slaves3?.setLevel(level)
 }
 
 def switchSetColorTempHandler(evt)
@@ -126,14 +129,14 @@ def switchSetColorTempHandler(evt)
 	def level = evt.value.toFloat()
 	level = level.toInteger()
 	log.info "switchSetColorTempHandler Event: ${level}"
-	slaves3?.setColorTemp(level)
+	slaves3?.setColorTemperature(level)
 }
 
 def switchOffHandler(evt) {
 	log.info "switchoffHandler Event: ${evt.value}"
 	slaves?.off()
 	slaves2?.off()
-    slaves3?.off()
+    	slaves3?.off()
 }
 
 def switchOnHandler(evt) {
@@ -141,5 +144,5 @@ def switchOnHandler(evt) {
 	def dimmerValue = masters.latestValue("level") //can be turned on by setting the level
 	slaves?.on()
 	slaves2?.on()
-    slaves3?.on()
+    	slaves3?.on()
 }
