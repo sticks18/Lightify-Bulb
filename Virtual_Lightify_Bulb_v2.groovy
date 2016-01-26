@@ -45,8 +45,18 @@ metadata {
         controlTile("colorSliderControl", "device.colorTemperature", "slider", height: 1, width: 2, inactiveLabel: false, range: "(2700..6500)") {
 			state "colorTemperature", action:"color temperature.setColorTemperature"
 		}
-		valueTile("kelvin", "device.colorTemperature", inactiveLabel: false, decoration: "flat") {
-			state "colorTemperature", label: 'Temp ${currentValue} K'
+		valueTile("kelvin", "device.colorTemperature") {
+			state "colorTemperature", label:'${currentValue}k',
+				backgroundColors:[
+					[value: 2900, color: "#FFA757"],
+					[value: 3300, color: "#FFB371"],
+					[value: 3700, color: "#FFC392"],
+					[value: 4100, color: "#FFCEA6"],
+					[value: 4500, color: "#FFD7B7"],
+					[value: 4900, color: "#FFE0C7"],
+					[value: 5300, color: "#FFE8D5"],
+                    [value: 6600, color: "#FFEFE1"]
+				]
 		}
         valueTile("bulbTemp", "device.bulbTemp", inactiveLabel: false, decoration: "flat") {
 			state "bulbTemp", label: '${currentValue}'
